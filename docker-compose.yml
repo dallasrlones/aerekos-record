@@ -1,0 +1,78 @@
+# Local / CI: `docker compose up -d` then `npm run wait-for-services && npm run test:e2e:ci`
+# Default `npm test` only runs SQLite e2e plus any backend enabled via E2E_* env vars.
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: aerekos_record_test
+    ports:
+      - '3306:3306'
+    command: --default-authentication-plugin=caching_sha2_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-uroot', '-proot']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aerekos_record_test
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+
+  mongodb:
+    image: mongo:7
+    ports:
+      - '27017:27017'
+
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      NEO4J_AUTH: neo4j/testpassword
+      NEO4J_dbms_memory_heap_max__size: 512M
+    ports:
+      - '7474:7474'
+      - '7687:7687'
+    healthcheck:
+      test: ['CMD-SHELL', 'cypher-shell -u neo4j -p testpassword --non-interactive "RETURN 1"']
+      interval: 5s
+      timeout: 15s
+      retries: 40
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.1
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - '9200:9200'
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -sf http://localhost:9200 >/dev/null || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - '8000:8000'
