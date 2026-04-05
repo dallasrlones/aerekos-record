@@ -23,8 +23,7 @@
     "test:e2e": "jest tests/e2e --runInBand",
     "test:e2e:ci": "E2E_ALL=1 jest tests/e2e --runInBand",
     "test:e2e:docker": "npm run wait-for-services && npm run test:e2e:ci",
-    "wait-for-services": "wait-on -t 180000 tcp:5432 tcp:3306 tcp:6379 tcp:27017 tcp:7687 tcp:9200 tcp:8000",
-    "wait-for-services:ci": "wait-on -t 300000 tcp:5432 tcp:3306 tcp:6379 tcp:27017 tcp:7687 tcp:9200 tcp:8000"
+    "wait-for-services": "wait-on -t 180000 tcp:5432 tcp:3306 tcp:6379 tcp:27017 tcp:7687 tcp:9200 tcp:8000"
   },
   "engines": {
     "node": ">=18"

@@ -14,7 +14,7 @@ Architectural defaults for **aerekos-record**. Override only when you have a del
 
 ## Repository layout
 
-- **Standalone package repo at root** is the default: `npm ci`, `docker compose`, and CI assume the clone root is this package. If this tree lives inside a monorepo, move `.github/workflows/ci.yml` to the monorepo root and set `defaults.run.working-directory` (and optional `paths` filters) so jobs run here.
+- **Standalone package repo at root** is the default: `npm ci`, `docker compose`, and tests assume the clone root is this package. In a monorepo, run those commands from this package directory (or wire your own automation).
 
 ## Peer dependencies and lazy loading
 
@@ -37,11 +37,10 @@ Architectural defaults for **aerekos-record**. Override only when you have a del
 - **SQL Server / Oracle:** not in scope without a dedicated adapter owner.
 - **DynamoDB / Firestore:** different consistency and query models; a separate package or scoped API is healthier than pretending parity with this ORM.
 
-## Multi-DB CI
+## Multi-DB testing (local)
 
-- **PR CI:** `unit` on Node 18/20/22.
-- **E2E:** `e2e-all-backends` after unit, `docker compose up`, `npm run test:e2e:docker` (`wait-for-services` + `E2E_ALL=1` Jest).
-- **Local default:** `npm test` (unit + SQLite e2e); full stack: `docker compose up -d && npm run test:e2e:docker`.
+- **Default:** `npm test` (unit + SQLite e2e).
+- **Full stack:** `docker compose up -d && npm run test:e2e:docker` (`wait-for-services` + `E2E_ALL=1` Jest).
 
 ## Elasticsearch / Neo4j / Chroma in Docker
 

@@ -594,18 +594,12 @@ npm test                 # unit tests + SQLite e2e (always on)
 
 ```bash
 docker compose up -d
-npm run test:e2e:docker  # wait-for-services + test:e2e:ci (same as CI-style full e2e)
+npm run test:e2e:docker   # wait-for-services + test:e2e:ci (E2E_ALL=1)
 ```
 
-Or run the two steps yourself: `npm run wait-for-services` then `npm run test:e2e:ci` (`E2E_ALL=1`). GitHub Actions uses **`npm run wait-for-services:ci`** (5 min cap) before e2e because runners cold-start more slowly.
+Or: `npm run wait-for-services` then `npm run test:e2e:ci`. If containers are slow to boot, run `wait-on` again or extend the `-t` timeout in the `wait-for-services` script locally.
 
 Opt in per backend when you do not want every service, e.g. `E2E_POSTGRES=1`, `E2E_MYSQL=1`, `E2E_NEO4J=1` (see `.env.example`).
-
----
-
-## CI
-
-GitHub Actions runs unit tests on Node 18 / 20 / 22 and a job that brings up **docker compose** and runs **`test:e2e:ci`**.
 
 ---
 
