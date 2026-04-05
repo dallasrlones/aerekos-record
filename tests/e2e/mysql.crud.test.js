@@ -1,5 +1,6 @@
 const Record = require('../../index')
 const { runMysql, uniqueSuffix, waitForDbHealth } = require('./helpers/e2eEnv')
+const { runSqlAdapterDeepContract } = require('../helpers/sqlAdapterDeepContract')
 
 const describeMysql = runMysql() ? describe : describe.skip
 
@@ -43,5 +44,9 @@ describeMysql('e2e: MySQL / MariaDB', () => {
 
     await Item.delete(row.id, { hardDelete: true })
     expect(await Item.find(row.id)).toBeNull()
+  })
+
+  it('deep SQL adapter contract', async () => {
+    await runSqlAdapterDeepContract(db, `my_${uniqueSuffix()}`)
   })
 })

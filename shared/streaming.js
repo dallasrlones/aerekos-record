@@ -22,6 +22,7 @@ class StreamingManager {
    * Create a readable stream for query results
    */
   createStream(options = {}) {
+    const modelApi = this.modelApi
     const chunkSize = options.chunkSize || this.chunkSize
     let offset = 0
     let hasMore = true
@@ -35,7 +36,7 @@ class StreamingManager {
         }
 
         try {
-          const results = await this.modelApi.findAll({
+          const results = await modelApi.findAll({
             ...options,
             limit: chunkSize,
             offset: offset,

@@ -1,6 +1,6 @@
 {
   "name": "aerekos-record",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Universal ORM for Node.js with Active Record-style syntax across multiple databases",
   "main": "index.js",
   "files": [
@@ -20,6 +20,7 @@
   "scripts": {
     "test": "npm run test:unit && npm run test:e2e",
     "test:coverage": "jest tests/unit tests/e2e --runInBand --coverage",
+    "test:coverage:all": "E2E_ALL=1 jest tests/unit tests/e2e --runInBand --coverage",
     "test:unit": "jest tests/unit",
     "test:e2e": "jest tests/e2e --runInBand",
     "test:e2e:ci": "E2E_ALL=1 jest tests/e2e --runInBand",

@@ -360,8 +360,6 @@ const sqliteAdapter = (connectionSettings = {}) => {
 
       async create(attrs, options = {}) {
         await schemaPromise
-        const callbacks = new CallbackChain(this, settings.callbacks)
-        
         const writableAttrs = pickWritableFields(attrs, properties)
         await callbacks.run('before_validation', writableAttrs)
         await callbacks.run('before_validation_on_create', writableAttrs)
@@ -503,8 +501,6 @@ const sqliteAdapter = (connectionSettings = {}) => {
 
       async update(id, changes, options = {}) {
         await schemaPromise
-        const callbacks = new CallbackChain(this, settings.callbacks)
-        
         const existing = await this.find(id, options)
         if (!existing) return null
 
@@ -565,8 +561,6 @@ const sqliteAdapter = (connectionSettings = {}) => {
 
       async delete(id, options = {}) {
         await schemaPromise
-        const callbacks = new CallbackChain(this, settings.callbacks)
-        
         const existing = await this.find(id, { withDeleted: true })
         if (!existing) return null
 
@@ -623,7 +617,6 @@ const sqliteAdapter = (connectionSettings = {}) => {
 
       async deleteBy(where, options = {}) {
         await schemaPromise
-        const callbacks = new CallbackChain(this, settings.callbacks)
         const normalized = normalizeWhere(where)
         const { whereClause, params } = buildWhereClause(normalized, softDeleteEnabled, false)
         

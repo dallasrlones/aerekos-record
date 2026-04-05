@@ -1,5 +1,6 @@
 const Record = require('../../index')
-const { runPostgres } = require('./helpers/e2eEnv')
+const { runPostgres, uniqueSuffix } = require('./helpers/e2eEnv')
+const { runSqlAdapterDeepContract } = require('../helpers/sqlAdapterDeepContract')
 
 function pgConnectionSettings() {
   if (process.env.E2E_POSTGRES_URL) {
@@ -53,5 +54,9 @@ describePg('e2e: PostgreSQL', () => {
     expect(again.id).toBe(row.id)
 
     await Item.delete(row.id, { hardDelete: true })
+  })
+
+  it('deep SQL adapter contract', async () => {
+    await runSqlAdapterDeepContract(db, `pg_${uniqueSuffix()}`)
   })
 })
