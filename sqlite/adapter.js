@@ -36,6 +36,14 @@ const buildWhereClause = (where, softDeleteEnabled, withDeleted, tableAlias = ''
   }
   
   Object.entries(where || {}).forEach(([key, val]) => {
+    if (val === null) {
+      const col =
+        key === 'id'
+          ? `${tableAlias ? tableAlias + '.' : ''}id`
+          : `${tableAlias ? tableAlias + '.' : ''}${key}`
+      conditions.push(`${col} IS NULL`)
+      return
+    }
     if (key === 'id') {
       conditions.push(`${tableAlias ? tableAlias + '.' : ''}id = ?`)
       params.push(val)

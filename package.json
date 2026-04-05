@@ -1,6 +1,6 @@
 {
   "name": "aerekos-record",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Universal ORM for Node.js with Active Record-style syntax across multiple databases",
   "main": "index.js",
   "files": [
@@ -19,12 +19,14 @@
   ],
   "scripts": {
     "test": "npm run test:unit && npm run test:e2e",
+    "test:coverage": "jest tests/unit tests/e2e --runInBand --coverage",
     "test:unit": "jest tests/unit",
     "test:e2e": "jest tests/e2e --runInBand",
     "test:e2e:ci": "E2E_ALL=1 jest tests/e2e --runInBand",
     "test:e2e:docker": "npm run wait-for-services && npm run test:e2e:ci",
     "wait-for-services": "wait-on -t 180000 tcp:5432 tcp:3306 tcp:6379 tcp:27017 tcp:7687 tcp:9200 tcp:8000"
   },
+  "prepublishOnly": "npm run test:coverage",
   "engines": {
     "node": ">=18"
   },

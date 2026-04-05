@@ -128,11 +128,11 @@ async function examples() {
     .findAll()
 
   // Batch operations
-  const users = await User.batch.bulkCreate([
+  const bulkCreated = await User.batch.bulkCreate([
     { name: 'Alice', email: 'alice@example.com', password: 'pass1', active: true },
     { name: 'Bob', email: 'bob@example.com', password: 'pass2', active: true },
   ])
-  console.log('Bulk created users:', users)
+  console.log('Bulk created users:', bulkCreated)
 
   // Transactions (SQLite)
   const transaction = db.db.transaction((users) => {

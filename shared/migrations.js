@@ -41,7 +41,9 @@ class MigrationManager {
     const migrations = await this.MigrationModel.findAll({
       where: { rolledBackAt: null }
     })
-    return migrations.map(m => m.version).sort()
+    return migrations
+      .map((m) => m.version)
+      .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
   }
 
   /**
@@ -109,9 +111,7 @@ module.exports = {
   },
 
   async down(db) {
-    // Write your rollback code here
-    // Example:
-    // await db.model('User').deleteBy({})
+    // Write your rollback code here (adapter-specific; e.g. SQLite models support deleteBy)
   }
 }
 `
@@ -155,12 +155,22 @@ module.exports = {
         // Run migration
         await migrationModule.up(this.adapter)
 
-        // Record migration
-        await this.MigrationModel.create({
-          version: migration.version,
-          name: migration.name,
-          appliedAt: new Date().toISOString(),
-        })
+        // Record migration (re-apply after rollback updates the existing row)
+        const existing = await this.MigrationModel.findBy({ version: migration.version })
+        const appliedAt = new Date().toISOString()
+        if (existing && existing.rolledBackAt != null) {
+          await this.MigrationModel.update(existing.id, {
+            name: migration.name,
+            appliedAt,
+            rolledBackAt: null,
+          })
+        } else if (!existing) {
+          await this.MigrationModel.create({
+            version: migration.version,
+            name: migration.name,
+            appliedAt,
+          })
+        }
 
         applied.push(migration)
         console.log(`✓ Applied migration: ${migration.name}`)
@@ -175,6 +185,10 @@ module.exports = {
 
   /**
    * Rollback migrations
+   * @param {object} options
+   * @param {number} [options.steps=1] — undo the last N applied migrations (newest first)
+   * @param {string} [options.to] — undo every applied migration with version **greater than** `to`;
+   *   migrations at `to` and below stay applied (Knex-style “rollback to”)
    */
   async rollback(options = {}) {
     const { steps = 1, to } = options
@@ -185,9 +199,12 @@ module.exports = {
       return { rolledBack: [], message: 'No migrations to rollback' }
     }
 
-    const migrationsToRollback = to
-      ? applied.filter(m => parseInt(m) >= parseInt(to)).reverse()
-      : applied.slice(-steps).reverse()
+    const migrationsToRollback =
+      to !== undefined && to !== null
+        ? applied
+            .filter((m) => parseInt(m, 10) > parseInt(to, 10))
+            .sort((a, b) => parseInt(b, 10) - parseInt(a, 10))
+        : [...applied].slice(-steps).reverse()
 
     const rolledBack = []
 

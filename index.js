@@ -154,8 +154,10 @@ const createMultiDatabase = () => {
  * // Run migrations
  * await migrations.migrate()
  * 
- * // Rollback last migration
+ * // Rollback last migration (newest first)
  * await migrations.rollback({ steps: 1 })
+ * // Roll back every migration with version greater than "5" (5 stays applied)
+ * await migrations.rollback({ to: '5' })
  * 
  * // Check status
  * const status = await migrations.status()
