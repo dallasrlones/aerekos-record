@@ -597,7 +597,7 @@ docker compose up -d
 npm run test:e2e:docker  # wait-for-services + test:e2e:ci (same as CI-style full e2e)
 ```
 
-Or run the two steps yourself: `npm run wait-for-services` then `npm run test:e2e:ci` (`E2E_ALL=1`).
+Or run the two steps yourself: `npm run wait-for-services` then `npm run test:e2e:ci` (`E2E_ALL=1`). GitHub Actions uses **`npm run wait-for-services:ci`** (5 min cap) before e2e because runners cold-start more slowly.
 
 Opt in per backend when you do not want every service, e.g. `E2E_POSTGRES=1`, `E2E_MYSQL=1`, `E2E_NEO4J=1` (see `.env.example`).
 

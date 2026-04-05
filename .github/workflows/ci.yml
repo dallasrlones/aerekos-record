@@ -31,10 +31,14 @@ jobs:
           node-version: '20.x'
           cache: npm
       - run: npm ci
+      # Elasticsearch exits on Linux if this is too low (common CI failure).
+      - name: Tune kernel for Elasticsearch
+        run: sudo sysctl -w vm.max_map_count=262144
       - name: Start databases
         run: docker compose up -d
+      # Longer than local default: Neo4j + ES cold start on a shared runner.
       - name: Full e2e (wait + all adapters)
-        run: npm run test:e2e:docker
+        run: npm run wait-for-services:ci && npm run test:e2e:ci
       - name: Stop databases
         if: always()
         run: docker compose down -v
