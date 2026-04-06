@@ -44,4 +44,21 @@ describeMongo('e2e: MongoDB', () => {
     await Item.delete(row.id, { hardDelete: true })
     expect(await Item.find(row.id)).toBeNull()
   })
+
+  it('boolean field create, query, and update', async () => {
+    const modelName = `E2eMongoFlag${suf}`
+    const Flag = db.model(
+      modelName,
+      { label: 'string', enabled: 'boolean' },
+      { required: ['label'], timestamps: true }
+    )
+    const row = await Flag.create({ label: `mflag-${suf}`, enabled: true })
+    expect(row.enabled).toBe(true)
+    const found = await Flag.findAll({ where: { enabled: true, label: `mflag-${suf}` } })
+    expect(found.some((r) => r.id === row.id)).toBe(true)
+    await Flag.update(row.id, { enabled: false })
+    const off = await Flag.find(row.id)
+    expect(off.enabled).toBe(false)
+    await Flag.delete(row.id, { hardDelete: true })
+  })
 })

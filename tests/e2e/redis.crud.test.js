@@ -48,4 +48,21 @@ describeRedis('e2e: Redis', () => {
     expect(del).toBeTruthy()
     expect(await Item.find(row.id)).toBeNull()
   })
+
+  it('boolean field roundtrip and findBy', async () => {
+    const modelName = `E2eRedisFlag${suf}`
+    const Flag = db.model(
+      modelName,
+      { token: 'string', enabled: 'boolean' },
+      { required: ['token'], timestamps: true }
+    )
+    const row = await Flag.create({ token: `rflag-${suf}`, enabled: true })
+    expect(row.enabled).toBe(true)
+    const found = await Flag.findBy({ token: `rflag-${suf}`, enabled: true })
+    expect(found.id).toBe(row.id)
+    await Flag.update(row.id, { enabled: false })
+    const off = await Flag.findBy({ token: `rflag-${suf}`, enabled: false })
+    expect(off.enabled).toBe(false)
+    await Flag.delete(row.id, { hardDelete: true })
+  })
 })

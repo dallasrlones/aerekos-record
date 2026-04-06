@@ -42,4 +42,21 @@ describeEs('e2e: Elasticsearch', () => {
     await Item.delete(row.id, { hardDelete: true })
     expect(await Item.find(row.id)).toBeNull()
   })
+
+  it('boolean field in document', async () => {
+    const modelName = `e2eEsFlag${suf}`
+    const Flag = db.model(
+      modelName,
+      { label: 'string', enabled: 'boolean' },
+      { required: ['label'], timestamps: true }
+    )
+    const row = await Flag.create({ label: `esflag-${suf}`, enabled: true })
+    expect(row.enabled === true || row.enabled === 1).toBe(true)
+    const found = await Flag.find(row.id)
+    expect(found.enabled === true || found.enabled === 1).toBe(true)
+    await Flag.update(row.id, { enabled: false })
+    const off = await Flag.find(row.id)
+    expect(off.enabled === false || off.enabled === 0).toBe(true)
+    await Flag.delete(row.id, { hardDelete: true })
+  })
 })

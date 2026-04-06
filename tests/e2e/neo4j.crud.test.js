@@ -43,4 +43,21 @@ describeNeo('e2e: Neo4j', () => {
     await Item.delete(row.id, { hardDelete: true })
     expect(await Item.find(row.id)).toBeNull()
   })
+
+  it('boolean property on node', async () => {
+    const modelName = `E2eNeoFlag${suf}`
+    const Flag = db.model(
+      modelName,
+      { label: 'string', enabled: 'boolean' },
+      { required: ['label'], timestamps: true }
+    )
+    const row = await Flag.create({ label: `nflag-${suf}`, enabled: true })
+    expect(row.enabled).toBe(true)
+    const found = await Flag.findBy({ label: `nflag-${suf}` })
+    expect(found.enabled).toBe(true)
+    await Flag.update(row.id, { enabled: false })
+    const off = await Flag.find(row.id)
+    expect(off.enabled).toBe(false)
+    await Flag.delete(row.id, { hardDelete: true })
+  })
 })

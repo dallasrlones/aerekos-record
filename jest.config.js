@@ -3,7 +3,13 @@ module.exports = {
   testEnvironment: 'node',
   testTimeout: 240000,
   coverageDirectory: 'coverage',
-  collectCoverageFrom: ['index.js', 'shared/**/*.js', '*/*/adapter.js', 'utils/**/*.js'],
+  collectCoverageFrom: [
+    'index.js',
+    'shared/**/*.js',
+    '*/*/adapter.js',
+    'sqlite/booleanBind.js',
+    'utils/**/*.js',
+  ],
   coveragePathIgnorePatterns: ['/node_modules/', '/tests/'],
   testPathIgnorePatterns: ['/node_modules/'],
   /**

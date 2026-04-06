@@ -80,6 +80,22 @@ async function runSqlAdapterDeepContract(db, suffix) {
   const cnt = await Q.count({ n: { gte: 1 } })
   expect(cnt).toBeGreaterThanOrEqual(1)
 
+  // —— Boolean columns (PG BOOLEAN, MySQL TINYINT(1), SQLite INTEGER 0/1) ——
+  const BoolM = db.model(
+    `Bool${s}`,
+    { label: 'string', enabled: 'boolean' },
+    { required: ['label'], timestamps: true }
+  )
+  const bOn = await BoolM.create({ label: `bool-on-${s}`, enabled: true })
+  expect(bOn.enabled === true || bOn.enabled === 1).toBe(true)
+  const byTrue = await BoolM.findAll({ where: { enabled: true } })
+  expect(byTrue.some((r) => r.id === bOn.id)).toBe(true)
+  await BoolM.update(bOn.id, { enabled: false })
+  const bOff = await BoolM.find(bOn.id)
+  expect(bOff.enabled === false || bOff.enabled === 0).toBe(true)
+  const byFalse = await BoolM.findAll({ where: { enabled: false, id: bOn.id } })
+  expect(byFalse.length).toBe(1)
+
   // —— Callbacks (instance API) ——
   const CB = db.model(`Cb${s}`, { v: 'number' }, { timestamps: true })
   let saw = 0

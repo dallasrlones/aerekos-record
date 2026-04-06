@@ -618,9 +618,27 @@ See **`EXAMPLES/README.md`** for how to run them.
 
 ## Changelog
 
+### 0.1.4
+
+- **Tests:** Unit tests for `sqlite/booleanBind.js`; boolean create/query/update in shared **SQL deep contract** (PostgreSQL / MySQL / SQLite when those e2e suites run); boolean cases in MongoDB, Redis, Neo4j, and Elasticsearch e2e CRUD tests (opt-in via `E2E_*` flags).
+- **SQLite:** Helpers moved to **`sqlite/booleanBind.js`** (same behavior as 0.1.3).
+
 ### 0.1.3
 
 - **SQLite:** Boolean fields are bound and persisted as **INTEGER 0/1** (fixes `better-sqlite3` rejecting JavaScript `true`/`false` in prepared statement parameters). Includes `where` clauses such as `{ active: true }`.
+
+### Other adapters and booleans
+
+| Backend | Notes |
+|--------|--------|
+| **PostgreSQL** | Native `BOOLEAN`; `pg` accepts JS `true`/`false` in parameters. |
+| **MySQL** | `TINYINT(1)`; `mysql2` coerces booleans for binds. |
+| **MongoDB** | BSON boolean on documents. |
+| **Redis** | JSON serialization preserves JSON booleans. |
+| **Neo4j** | Driver maps boolean properties. |
+| **Elasticsearch** | JSON `boolean` in mappings. |
+
+Only **SQLite + better-sqlite3** required the explicit 0/1 bind fix.
 
 ---
 
