@@ -16,6 +16,29 @@ const {
 } = require('../shared/utils')
 const enhanceModel = require('../shared/modelEnhancer')
 
+/**
+ * better-sqlite3 only accepts a narrow set of JS types as bound parameters.
+ * Boolean is not allowed — INTEGER columns need 0 or 1.
+ */
+const normalizeSqliteBind = (v) => {
+  if (typeof v === 'boolean') return v ? 1 : 0
+  if (Array.isArray(v)) return v.map(normalizeSqliteBind)
+  return v
+}
+
+/** After TYPE_COERCERS.boolean (true/false), convert booleans to 0/1 for INSERT/UPDATE. */
+const coerceBooleansForSqliteStorage = (attrs, properties) => {
+  if (!attrs || !properties) return attrs
+  const out = { ...attrs }
+  for (const [key, type] of Object.entries(properties)) {
+    if (type !== 'boolean' || !(key in out)) continue
+    const val = out[key]
+    if (val === null || val === undefined) continue
+    if (typeof val === 'boolean') out[key] = val ? 1 : 0
+  }
+  return out
+}
+
 const DEFAULT_CONNECTION = {
   database: process.env.SQLITE_DATABASE || './database.sqlite',
   // SQLite options
@@ -46,32 +69,32 @@ const buildWhereClause = (where, softDeleteEnabled, withDeleted, tableAlias = ''
     }
     if (key === 'id') {
       conditions.push(`${tableAlias ? tableAlias + '.' : ''}id = ?`)
-      params.push(val)
+      params.push(normalizeSqliteBind(val))
       paramIndex++
     } else if (Array.isArray(val)) {
       const placeholders = val.map(() => '?').join(', ')
       conditions.push(`${tableAlias ? tableAlias + '.' : ''}${key} IN (${placeholders})`)
-      params.push(...val)
+      params.push(...normalizeSqliteBind(val))
       paramIndex += val.length
     } else if (isObject(val) && (val.gte != null || val.lte != null || val.$gt != null || val.$lt != null)) {
       if (val.gte != null) {
         conditions.push(`${tableAlias ? tableAlias + '.' : ''}${key} >= ?`)
-        params.push(val.gte)
+        params.push(normalizeSqliteBind(val.gte))
         paramIndex++
       }
       if (val.lte != null) {
         conditions.push(`${tableAlias ? tableAlias + '.' : ''}${key} <= ?`)
-        params.push(val.lte)
+        params.push(normalizeSqliteBind(val.lte))
         paramIndex++
       }
       if (val.$gt != null) {
         conditions.push(`${tableAlias ? tableAlias + '.' : ''}${key} > ?`)
-        params.push(val.$gt)
+        params.push(normalizeSqliteBind(val.$gt))
         paramIndex++
       }
       if (val.$lt != null) {
         conditions.push(`${tableAlias ? tableAlias + '.' : ''}${key} < ?`)
-        params.push(val.$lt)
+        params.push(normalizeSqliteBind(val.$lt))
         paramIndex++
       }
     } else if (isObject(val) && val.contains != null) {
@@ -80,7 +103,7 @@ const buildWhereClause = (where, softDeleteEnabled, withDeleted, tableAlias = ''
       paramIndex++
     } else {
       conditions.push(`${tableAlias ? tableAlias + '.' : ''}${key} = ?`)
-      params.push(val)
+      params.push(normalizeSqliteBind(val))
       paramIndex++
     }
   })
@@ -376,10 +399,11 @@ const sqliteAdapter = (connectionSettings = {}) => {
         const now = nowIso()
         
         const coerced = await coerceAndEncrypt(writableAttrs, properties)
-        
+        const stored = coerceBooleansForSqliteStorage(coerced, properties)
+
         const insertData = {
           id,
-          ...coerced,
+          ...stored,
         }
 
         if (timestampsEnabled) {
@@ -514,7 +538,7 @@ const sqliteAdapter = (connectionSettings = {}) => {
         await callbacks.run('before_update', { ...existing, ...writableChanges })
 
         const coerced = await coerceAndEncrypt(writableChanges, properties)
-        const updateData = { ...coerced }
+        const updateData = coerceBooleansForSqliteStorage(coerced, properties)
 
         if (timestampsEnabled) {
           updateData.updated_at = nowIso()
@@ -542,7 +566,7 @@ const sqliteAdapter = (connectionSettings = {}) => {
         
         const writableChanges = pickWritableFields(changes, properties)
         const coerced = await coerceAndEncrypt(writableChanges, properties)
-        const updateData = { ...coerced }
+        const updateData = coerceBooleansForSqliteStorage(coerced, properties)
 
         if (timestampsEnabled) {
           updateData.updated_at = nowIso()
@@ -598,7 +622,7 @@ const sqliteAdapter = (connectionSettings = {}) => {
         
         const writableChanges = pickWritableFields(changes, properties)
         const coerced = await coerceAndEncrypt(writableChanges, properties)
-        const updateData = { ...coerced }
+        const updateData = coerceBooleansForSqliteStorage(coerced, properties)
 
         if (timestampsEnabled) {
           updateData.updated_at = nowIso()

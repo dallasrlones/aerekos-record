@@ -1,6 +1,6 @@
 {
   "name": "aerekos-record",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Universal ORM for Node.js with Active Record-style syntax across multiple databases",
   "main": "index.js",
   "files": [

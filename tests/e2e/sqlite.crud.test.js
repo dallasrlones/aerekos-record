@@ -55,4 +55,22 @@ describe('e2e: SQLite', () => {
     const gone = await Widget.find(w.id)
     expect(gone).toBeNull()
   })
+
+  it('persists boolean fields as 0/1 (better-sqlite3 bind compatibility)', async () => {
+    const Flag = db.model(
+      'Flag',
+      { label: 'string', enabled: 'boolean' },
+      { required: ['label'], timestamps: true }
+    )
+
+    const row = await Flag.create({ label: 'A', enabled: true })
+    expect(row.enabled === true || row.enabled === 1).toBe(true)
+
+    const byBool = await Flag.findAll({ where: { enabled: true } })
+    expect(byBool.some((r) => r.id === row.id)).toBe(true)
+
+    await Flag.update(row.id, { enabled: false })
+    const off = await Flag.find(row.id)
+    expect(off.enabled === false || off.enabled === 0).toBe(true)
+  })
 })

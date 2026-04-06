@@ -177,6 +177,8 @@ await Tag.deleteBy({ name: 'documentation' })
 await db.close()
 ```
 
+**Booleans:** Schema type `boolean` is stored as `INTEGER`. After coercion to `true`/`false`, the adapter converts to **0** or **1** for inserts, updates, and `where` bindings so **better-sqlite3** never receives raw boolean bind values.
+
 ### MongoDB
 
 ```javascript
@@ -322,7 +324,7 @@ console.log(health) // { status: 'healthy', ... }
 |------|----------|
 | `string` | Coerced with `String()` |
 | `number` | Coerced with `Number()` |
-| `boolean` | Coerced with `Boolean()` |
+| `boolean` | Coerced with `Boolean()` for app logic; **SQLite** writes **0/1** at bind time (better-sqlite3 does not accept JS booleans as parameters) |
 | `datetime` | ISO strings via `Date` |
 | `encrypted` | Bcrypt hash on write; **omitted** from normal reads |
 
@@ -611,6 +613,14 @@ The repo includes **`EXAMPLES/`** with per-backend sketches and advanced topics:
 - `EXAMPLES/embeddings-example.js`, `EXAMPLES/attachments-example.js`, `EXAMPLES/advanced-features.js`
 
 See **`EXAMPLES/README.md`** for how to run them.
+
+---
+
+## Changelog
+
+### 0.1.3
+
+- **SQLite:** Boolean fields are bound and persisted as **INTEGER 0/1** (fixes `better-sqlite3` rejecting JavaScript `true`/`false` in prepared statement parameters). Includes `where` clauses such as `{ active: true }`.
 
 ---
 
